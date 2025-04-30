@@ -121,3 +121,7 @@ target/
 
 # NPM
 node_modules/
+
+# Data
+*.csv
+*.jsonl

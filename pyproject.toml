@@ -13,7 +13,10 @@ authors = [{name = "Rosie Oxbury"}]
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "discovery-utils>=0.1.0",
+    "pandas>=2.2.3",
+]
 
 [project.urls]
 repository = "https://github.com/nestauk/discovery_heat_pump_futures"
@@ -59,3 +62,6 @@ convention = "google"
 [tool.ruff.format]
 docstring-code-format = true
 docstring-code-line-length = "dynamic"
+
+[tool.uv.sources]
+discovery-utils = { git = "https://github.com/nestauk/discovery_utils.git" }

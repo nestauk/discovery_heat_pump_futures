@@ -32,7 +32,7 @@ dev = [
     "sphinx-rtd-theme",
     "pytest",
     "pre-commit",
-    "pre-commit-hooks"
+    "pre-commit-hooks",
 ]
 
 [tool.jupytext]

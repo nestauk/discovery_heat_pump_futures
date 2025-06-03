@@ -76,26 +76,7 @@ def filter_on_keywords(df: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: A filtered DataFrame including only rows where at least one
         keyword was found.
     """
-    keyword_df = get_taxonomy()
-
-    # Create a list of (key
-    # word, category, subcategory) tuples
-    keyword_list = []
-    for _, row in keyword_df.iterrows():
-        for keyword in row["Keywords"]:
-            keyword_list.append((keyword.lower(), row["Category"], row["Subcategory"]))
-
-    df["matched_keywords"] = (
-        df["title_abstract"].fillna("").apply(lambda x: find_keywords(x, keyword_list))
-    )
-
-    df["n_keywords"] = df["matched_keywords"].apply(len)
-
-    df_filtered = df[df["n_keywords"] > 0].copy()
-
-    return df_filtered
-
-
+  
 if __name__ == "__main__":
     OPENALEX_URL = "https://discovery-hub-open-data.s3.eu-west-2.amazonaws.com/future_heat_pumps/heat_pumps_openalex.csv"
     PATENT_URL = "https://discovery-hub-open-data.s3.eu-west-2.amazonaws.com/future_heat_pumps/heat_pumps_patents.json"
@@ -126,12 +107,6 @@ if __name__ == "__main__":
         ],
         ignore_index=True,
     )
-
-    # OPTIONAL: keyword filtering
-    # Currently this does not return many results, so maybe it is filtering out
-    # too many patents/abstracts? We can either remove this step,
-    # or adjust the keywords to be more inclusive.
-    combined_sample_filtered = filter_on_keywords(combined_sample)
 
     relevance_proc = batch_check.LLMProcessor(
         model_name="gpt-4o-mini",

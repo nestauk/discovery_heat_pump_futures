@@ -29,7 +29,11 @@ SYSTEM_MESSAGE = """
 
     If the requested information is not described, return N/A. DO NOT make up any false information or false inferences.
 """
-
+    # Could work, but it transforms it into a monster prompt, again.
+    # When assessing Technology Readiness Level (TRL), consider these indicators:
+    # - Lab studies, simulations, theoretical work → TRL 1-3
+    # - Prototype development, component testing → TRL 4-6  
+    # - Demonstration projects, commercial products → TRL 7-9
 
 def df_to_nested_dict(df: pd.DataFrame) -> Dict[str, Dict[str, str]]:
     """
@@ -95,10 +99,25 @@ if __name__ == "__main__":
             "description": "A brief summary (≤25 words) of the innovation or technology described.",
         },
         # Application context
+        # {
+        #     "name": "application_type",
+        #     "type": "str",
+        #     "description": "Identify the application: 'domestic' (residential, <20kW), 'industrial' (commercial, >100kW), 'both', or 'unclear'.",
+        # },
         {
-            "name": "application_type",
-            "type": "str",
-            "description": "Identify the application: 'domestic' (residential, <20kW), 'industrial' (commercial, >100kW), 'both', or 'unclear'.",
+        "name": "application_type",
+        "type": "str",
+        "description": """Identify the primary application scale based on context and capacity:
+
+        'domestic': Residential/household applications, typically <20kW, single-family homes, apartments, small residential buildings
+        
+        'industrial': Commercial/industrial applications, typically >100kW, office buildings, factories, district heating, process heat, large multi-family buildings
+        
+        'both': Explicitly mentions multiple scales or scalable across domestic and industrial
+        
+        'unclear': Insufficient information to determine scale
+        
+        Consider both stated capacity (kW) and application context (building type, use case)."""
         },
         {
             "name": "specific_applications",
@@ -129,6 +148,24 @@ if __name__ == "__main__":
             "type": "list[str]",
             "description": f"Identify which principle(s) of the circular economy are relevant to the text. This could be one or more of the following: {escape_braces(str(category_dict['Circular economy']))}. Return an empty list if none apply.",
         },
+        #TRL
+        {
+            "name": "technology_readiness_level",
+            "type": "str", 
+            "description": """Assess the Technology Readiness Level (TRL) based on the text content:
+        
+            TRL 1: Basic principles observed and reported
+            TRL 2: Technology concept formulated and validated  
+            TRL 3: Applied research and proof of concept
+            TRL 4: Component-level validation in lab environment
+            TRL 5: Prototype tested in intended environment
+            TRL 6: Prototype system tested, close to expected performance
+            TRL 7: Demonstration system at pre-commercial scale
+            TRL 8: First commercial system, manufacturing issues resolved
+            TRL 9: Full commercial application available to consumers
+        
+            Return just the number (1-9) or 'unclear' if insufficient information."""
+    },
         # TODO: ... continue here with other fields as desired e.g. has_cost_reduction_potential and so on
     ]
 
@@ -160,6 +197,7 @@ if __name__ == "__main__":
                 "non_trad_technologies",
                 "system_design",
                 "circular_economy",
+                "technology_readiness_level",
             ]
         ],
         on="id",

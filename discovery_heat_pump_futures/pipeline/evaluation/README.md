@@ -12,13 +12,13 @@
 
 ## Evaluate the classification step
 
-- Run `pipeline/filter_relevance.py` and `pipeline/classify_innovations.py`
+- Run `pipeline/filter_relevance.py` and `pipeline/classify_innovations.py` on the full data. Some of the categories are quite sparse, so we need the full data in order to have a good chance of getting enough positive examples for each category/subcategory.
 
-- `pipeline/evaluation/create_balanced_sample.py`: sample data from those instances already labelled by GPT in order to create a balanced sample
+- Run `pipeline/evaluation/create_balanced_sample.py`: this creates a balanced sample from the data labelled by GPT at the previous step. This script aims to get 5 positive and 5 negative examples per subcategory.
 
-- `format_sample_for_labelling.py`: format the sample so that it is as straightforward as possible to manually annotate
+- `format_sample_for_labelling.py`: format the sample so that it is as straightforward as possible to manually annotate.
 
-- Manually label this in Google Sheets or similar
+- Manually label this in Google Sheets or similar. For most categories, go one column at a time and label 5x predicted 0s and 5x predicted 1s. For application type (and ground source/air source if applicable) try to label 5x "industrial", 5x "domestic, 5x "both" and 5x "unclear". Address TRL last as this will likely take the most brain power!
 
 - Download the labelled data store it in `inputs/`
 

@@ -14,7 +14,6 @@ from discovery_utils.utils.llm import batch_check
 
 from discovery_heat_pump_futures import PROJECT_DIR
 from discovery_heat_pump_futures.utils.data_cleaning import format_title_abstract
-from discovery_heat_pump_futures.getters.taxonomy import get_taxonomy
 
 # Number of samples to take from each source i.e. X abstracts, X patents.
 # Once happy with the prompts and overall pipeline, we can get rid of this.
@@ -76,7 +75,8 @@ def filter_on_keywords(df: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: A filtered DataFrame including only rows where at least one
         keyword was found.
     """
-  
+
+
 if __name__ == "__main__":
     OPENALEX_URL = "https://discovery-hub-open-data.s3.eu-west-2.amazonaws.com/future_heat_pumps/heat_pumps_openalex.csv"
     PATENT_URL = "https://discovery-hub-open-data.s3.eu-west-2.amazonaws.com/future_heat_pumps/heat_pumps_patents.json"
@@ -134,6 +134,8 @@ if __name__ == "__main__":
         on="id",
         how="left",
     )
+
+    output_data.to_csv(PROJECT_DIR / "inputs/relevance_check.csv", index=False)
 
     filtered_data = output_data[output_data["is_heat_pump"] == "yes"].copy()
     filtered_data.to_csv(

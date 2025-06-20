@@ -15,10 +15,6 @@ from discovery_utils.utils.llm import batch_check
 from discovery_heat_pump_futures import PROJECT_DIR
 from discovery_heat_pump_futures.utils.data_cleaning import format_title_abstract
 
-# Number of samples to take from each source i.e. X abstracts, X patents.
-# Once happy with the prompts and overall pipeline, we can get rid of this.
-SAMPLE_SIZE = 500
-
 RELEVANCE_SYSTEM = """
     You are evaluating if a document is PRIMARILY about heat pump technology.
 
@@ -90,20 +86,18 @@ if __name__ == "__main__":
     openalex_df["source"] = "openalex"
     patents_df["source"] = "patents"
 
-    # TODO: To run this over *all* abstracts/patents, the `.sample()` part
-    # should be removed
-    combined_sample = pd.concat(
+    combined_df = pd.concat(
         [
             patents_df[["publication_number", "source", "title_abstract"]]
-            .rename(columns={"publication_number": "id"})
-            .sample(SAMPLE_SIZE, random_state=42),
+            .rename(columns={"publication_number": "id"}),
+
             openalex_df[
                 [
                     "id",
                     "source",
                     "title_abstract",
                 ]
-            ].sample(SAMPLE_SIZE, random_state=42),
+            ],
         ],
         ignore_index=True,
     )
@@ -117,11 +111,8 @@ if __name__ == "__main__":
         output_path=str(PROJECT_DIR / "outputs/relevance_check.jsonl"),
     )
 
-    # In the code below, you'd use `combined_sample_filtered` instead
-    # of `combined_sample` if you do want to proceed with keyword
-    # filtering
-    ids = combined_sample["id"].tolist()
-    text = combined_sample["title_abstract"].tolist()
+    ids = combined_df["id"].tolist()
+    text = combined_df["title_abstract"].tolist()
     data_dict = dict(zip(ids, text, strict=True))
 
     relevance_proc.run(data_dict, batch_size=50, sleep_time=0.5)
@@ -129,7 +120,7 @@ if __name__ == "__main__":
     classified_data = pd.read_json(relevance_proc.output_path, lines=True)
 
     output_data = pd.merge(
-        combined_sample,
+        combined_df,
         classified_data[["id", "is_heat_pump", "confidence", "reason"]],
         on="id",
         how="left",

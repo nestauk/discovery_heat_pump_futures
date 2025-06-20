@@ -29,11 +29,6 @@ SYSTEM_MESSAGE = """
 
     If the requested information is not described, return N/A. DO NOT make up any false information or false inferences.
 """
-    # Could work, but it transforms it into a monster prompt, again.
-    # When assessing Technology Readiness Level (TRL), consider these indicators:
-    # - Lab studies, simulations, theoretical work → TRL 1-3
-    # - Prototype development, component testing → TRL 4-6  
-    # - Demonstration projects, commercial products → TRL 7-9
 
 def df_to_nested_dict(df: pd.DataFrame) -> Dict[str, Dict[str, str]]:
     """
@@ -99,26 +94,47 @@ if __name__ == "__main__":
             "description": "A brief summary (≤25 words) of the innovation or technology described.",
         },
         # Application context
-        # {
-        #     "name": "application_type",
-        #     "type": "str",
-        #     "description": "Identify the application: 'domestic' (residential, <20kW), 'industrial' (commercial, >100kW), 'both', or 'unclear'.",
-        # },
         {
         "name": "application_type",
         "type": "str",
         "description": """Identify the primary application scale based on context and capacity:
 
-        'domestic': Residential/household applications, typically <20kW, single-family homes, apartments, small residential buildings
+        'domestic': Residential/household applications, typically <20kW, single-family homes, apartments, small residential buildings.
         
-        'industrial': Commercial/industrial applications, typically >100kW, office buildings, factories, district heating, process heat, large multi-family buildings
+        'industrial': Commercial/industrial applications, typically >100kW, office buildings, factories, district heating, process heat, large multi-family buildings.
         
-        'both': Explicitly mentions multiple scales or scalable across domestic and industrial
+        'both': Explicitly mentions multiple scales or scalable across domestic and industrial.
         
-        'unclear': Insufficient information to determine scale
+        'unclear': Insufficient information to determine scale.
         
         Consider both stated capacity (kW) and application context (building type, use case)."""
         },
+        # Heat pump type (ASHP vs GSHP)
+        {
+            "name": "heat_pump_type",
+            "type": "str",
+            "description": """Identify the type of heat pump based on the heat source:
+
+            'ASHP': Air-source heat pump - Uses external/ambient air as heat source. Indicators include:
+            - Mentions of 'air source', 'air-source', 'ASHP'
+            - References to outdoor air, ambient air, external air
+            - Air-to-air or air-to-water systems
+            - Outdoor units, fans for air circulation
+            
+            'GSHP': Ground-source heat pump - Uses underground heat sources. Indicators include:
+            - Mentions of 'ground source', 'ground-source', 'GSHP', 'geothermal'
+            - References to underground, buried pipes/tubes, boreholes
+            - Open-loop or closed-loop ground systems
+            - Groundwater, aquifer, or soil as heat source
+            - Horizontal or vertical ground heat exchangers
+            
+            'both': Document explicitly discusses both ASHP and GSHP technologies
+            
+            'unclear': Insufficient information to determine the heat source type
+            
+            Note: Focus on the primary heat source, not the distribution method."""
+        },
+        #Specific application
         {
             "name": "specific_applications",
             "type": "list[str]",
@@ -128,19 +144,25 @@ if __name__ == "__main__":
         {
             "name": "trad_components",
             "type": "list[str]",
-            "description": f"Identify which component(s) of the heat pump, if any, are relevant to the text. This could be one or more of the following: {escape_braces(str(category_dict['Traditional Heat Pump Components']))}. Return an empty list if none apply.",
+            "description": f"Identify which component(s) of the heat pump, if any, are relevant to the text. This could be one or more of the following: {escape_braces(str(category_dict['Traditional Components']))}. Return an empty list if none apply.",
         },
         # Non traditional technologies
         {
             "name": "non_trad_technologies",
             "type": "list[str]",
-            "description": f"Identify which non-traditional technology/technologies is relevant to the text. This could be one or more of the following: {escape_braces(str(category_dict['Non-traditional components']))}. Return an empty list if none apply.",
+            "description": f"Identify which non-traditional technology/technologies is relevant to the text. This could be one or more of the following: {escape_braces(str(category_dict['Non traditional technologies']))}. Return an empty list if none apply.",
         },
         # System design
         {
             "name": "system_design",
             "type": "list[str]",
             "description": f"Identify which system design aspect(s) is relevant to the text. This could be one or more of the following: {escape_braces(str(category_dict['System Design']))}. Return an empty list if none apply.",
+        },
+        # Other improvements
+        {
+            "name": "other_improvements",
+            "type": "list[str]",
+            "description": f"Identify which other improvements aspect(s) is relevant to the text. This could be one or more of the following: {escape_braces(str(category_dict['Other Improvements']))}. Return an empty list if none apply.",
         },
         # Circular economy
         {
@@ -150,22 +172,29 @@ if __name__ == "__main__":
         },
         #TRL
         {
-            "name": "technology_readiness_level",
-            "type": "str", 
-            "description": """Assess the Technology Readiness Level (TRL) based on the text content:
-        
-            TRL 1: Basic principles observed and reported
-            TRL 2: Technology concept formulated and validated  
-            TRL 3: Applied research and proof of concept
-            TRL 4: Component-level validation in lab environment
-            TRL 5: Prototype tested in intended environment
-            TRL 6: Prototype system tested, close to expected performance
-            TRL 7: Demonstration system at pre-commercial scale
-            TRL 8: First commercial system, manufacturing issues resolved
-            TRL 9: Full commercial application available to consumers
-        
-            Return just the number (1-9) or 'unclear' if insufficient information."""
-    },
+    "name": "technology_readiness_level",
+    "type": "str", 
+    "description": """Classify the Technology Readiness Level (TRL) based on the HIGHEST level of development mentioned in the text.
+    Return ONLY: '1', '2', '3', or 'unclear'
+
+    '1' (TRL 1-3): Research phase
+    - Keywords: simulation, theoretical, modeling, conceptual, laboratory study, feasibility
+    - NO prototypes or real-world testing
+
+    '2' (TRL 4-6): Development phase  
+    - Keywords: prototype, test rig, experimental, pilot, component testing, validation
+    - Lab/controlled environment ONLY
+
+    '3' (TRL 7-9): Deployment phase
+    - Keywords: commercial, product, field test, installed, operational, demonstration project
+    - Real-world application/data
+
+    Rules:
+    - If multiple levels present → return HIGHEST
+    - Patents with products → '2' or '3'
+    - Only simulations → '1'
+    - No TRL indicators → 'unclear'"""
+},
         # TODO: ... continue here with other fields as desired e.g. has_cost_reduction_potential and so on
     ]
 
@@ -192,9 +221,11 @@ if __name__ == "__main__":
             [
                 "id",
                 "application_type",
+                "heat_pump_type",
                 "specific_applications",
                 "trad_components",
                 "non_trad_technologies",
+                "other_improvements",
                 "system_design",
                 "circular_economy",
                 "technology_readiness_level",

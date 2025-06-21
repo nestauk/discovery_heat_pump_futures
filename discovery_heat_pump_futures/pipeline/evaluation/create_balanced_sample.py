@@ -13,9 +13,11 @@ DATA_INPUT_PATH = PROJECT_DIR / "inputs/heat_pump_data_w_categories.csv"
 DATA_OUTPUT_PATH = PROJECT_DIR / "inputs/balanced_sample.csv"
 TARGET_COLS = [
     "application_type",
+    "heat_pump_type",
     "trad_components",
     "non_trad_technologies",
     "system_design",
+    "other_improvements",
     "circular_economy",
     "technology_readiness_level",
 ]

@@ -86,9 +86,15 @@ if __name__ == "__main__":
     openalex_df["source"] = "openalex"
     patents_df["source"] = "patents"
 
+    patents_df["publication_year"] = (
+        patents_df["publication_date"].astype(str).str.slice(0, 4).astype("Int64")
+    )
+
+    openalex_df["publication_year"] = openalex_df["publication_year"].astype("Int64")
+
     combined_df = pd.concat(
         [
-            patents_df[["publication_number", "source", "title_abstract"]]
+            patents_df[["publication_number", "source", "title_abstract", "publication_year"]]
             .rename(columns={"publication_number": "id"}),
 
             openalex_df[
@@ -96,6 +102,7 @@ if __name__ == "__main__":
                     "id",
                     "source",
                     "title_abstract",
+                    "publication_year"
                 ]
             ],
         ],

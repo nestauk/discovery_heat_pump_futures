@@ -174,28 +174,50 @@ if __name__ == "__main__":
         {
     "name": "technology_readiness_level",
     "type": "str", 
-    "description": """Classify the Technology Readiness Level (TRL) based on the HIGHEST level of development mentioned in the text.
-    Return ONLY: '1', '2', '3', or 'unclear'
+    "description": """Classify the innovation's development phase based on Technology Readiness Level (TRL) indicators.
 
-    '1' (TRL 1-3): Research phase
-    - Keywords: simulation, theoretical, modeling, conceptual, laboratory study, feasibility
-    - NO prototypes or real-world testing
+    IMPORTANT: The Technology Readiness Level scale ranges from 1-9, which we group into three phases:
+    - TRL 1-3 = Research phase
+    - TRL 4-6 = Development phase  
+    - TRL 7-9 = Deployment phase
 
-    '2' (TRL 4-6): Development phase  
-    - Keywords: prototype, test rig, experimental, pilot, component testing, validation
-    - Lab/controlled environment ONLY
+    Return ONLY one of: 'Research phase', 'Development phase', 'Deployment phase', or 'unclear'
 
-    '3' (TRL 7-9): Deployment phase
-    - Keywords: commercial, product, field test, installed, operational, demonstration project
-    - Real-world application/data
+    RESEARCH PHASE (equivalent to TRL 1-3):
+    - Basic principles, theoretical concepts, or fundamental research
+    - Computer simulations, mathematical models, or analytical studies
+    - Laboratory experiments to validate basic concepts
+    - Keywords: theoretical, conceptual, simulation, modeling, feasibility study, basic research, fundamental
+    - NO physical prototypes or real-world testing
 
-    Rules:
-    - If multiple levels present → return HIGHEST
-    - Patents with products → '2' or '3'
-    - Only simulations → '1'
-    - No TRL indicators → 'unclear'"""
+    DEVELOPMENT PHASE (equivalent to TRL 4-6):  
+    - Component or prototype development and testing
+    - Laboratory or controlled environment validation
+    - System/subsystem model or prototype demonstration
+    - Keywords: prototype, test rig, experimental setup, laboratory testing, validation, proof-of-concept, pilot scale, bench scale
+    - Testing is LIMITED to controlled/laboratory environments
+
+    DEPLOYMENT PHASE (equivalent to TRL 7-9):
+    - System prototype demonstration in operational environment
+    - Actual system completed and qualified through testing
+    - Commercial products, field installations, or market-ready technologies
+    - Keywords: commercial, product, field test, demonstration project, installed system, operational, market-ready, real-world application, customer site
+    - Real-world testing, deployment, or commercial availability
+
+    Decision rules:
+    - If multiple phases are evident → classify based on the HIGHEST phase achieved
+    - Patents describing commercial products → 'Deployment phase'
+    - Only simulations without prototypes → 'Research phase'
+    - Prototype testing in labs only → 'Development phase'
+    - Field testing or commercial use → 'Deployment phase'
+    - Insufficient information → 'unclear'"""
 },
-        # TODO: ... continue here with other fields as desired e.g. has_cost_reduction_potential and so on
+{
+    "name": "trl_reasoning",
+    "type": "str",
+    "description": """Provide concise step by step reasoning as to why you classified this innovation into the chosen development phase. 
+    Reference specific keywords or phrases from the text that support your classification."""
+}
     ]
 
     logging.info("Fields for extraction: %s")
@@ -229,6 +251,7 @@ if __name__ == "__main__":
                 "system_design",
                 "circular_economy",
                 "technology_readiness_level",
+                "trl_reasoning",
             ]
         ],
         on="id",
